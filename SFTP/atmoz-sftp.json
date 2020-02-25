@@ -11,6 +11,37 @@
         "description": "The storage account to store upload folder"
       }
     },
+    "storageAccountKind": {
+      "type": "string",
+      "allowedValues": [
+        "Storage",
+        "StorageV2",
+        "BlobStorage",
+        "FileStorage",
+        "BlockBlobStorage"
+      ],
+      "defaultValue": "StorageV2",
+      "metadata": {
+        "description": "Storage Account Kind"
+      }
+    },
+    "storageAccountSku": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Standard_ZRS",
+        "Premium_LRS",
+        "Premium_ZRS",
+        "Standard_GZRS",
+        "Standard_RAGZRS"
+      ],
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "Storage Account SKU Type."
+      }
+    },
     "sftpUserName": {
       "type": "string",
       "metadata": {
@@ -27,14 +58,43 @@
   "variables": {
     "location": "[resourceGroup().location]",
     "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccountName'))]",
-    "storageApiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]"
+    "storageApiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]",
+    "azureFileShareName": "concat('sftpvolume',parameters('sftpUserName'))"
   },
   "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "kind": "[parameters('storageAccountKind')]",
+      "name": "[parameters('storageAccountName')]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('storageAccountSku')]"
+      },
+      "properties": {
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2019-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/default/', variables('azureFileShareName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+      ],
+      "properties": {
+        "shareQuota": 5120
+      }
+    },
     {
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2018-10-01",
       "location": "[variables('location')]",
       "name": "[parameters('resourceName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+      ],
       "properties": {
         "containers": [
           {
@@ -60,7 +120,7 @@
               },
               "volumeMounts": [
                 {
-                  "name": "[concat('sftpvolume',parameters('sftpUserName'))]",
+                  "name": "[variables('azureFileShareName')]",
                   "mountPath": "[concat('/home/',parameters('sftpUserName'),'upload')]",
                   "readOnly": false
                 }
@@ -92,6 +152,6 @@
           }
         ]
       }
-    }        
+    }
   ]
 }
