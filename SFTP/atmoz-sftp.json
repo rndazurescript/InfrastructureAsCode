@@ -1,0 +1,97 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "resourceName": {
+        "type": "string"
+      },
+      "storageAccountName": {
+        "type": "string",
+        "metadata": {
+          "description": "The storage account to store upload folder"
+        }
+      },
+      "sftpUserName": {
+        "type": "string",
+        "metadata": {
+          "description": "The sftp username"
+        }
+      },
+      "sftpPassword": {
+        "type": "securestring",
+        "metadata": {
+          "description": "The sftp user password. You should modify this template to encrypt it using atmoz/makepasswd as described in https://github.com/atmoz/sftp"
+        }
+      }
+    },
+    "variables": {
+      "location": "[resourceGroup().location]",
+      "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccountName'))]",
+      "storageApiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.ContainerInstance/containerGroups",
+        "apiVersion": "[providers('Microsoft.ContainerInstance','containerGroups').apiVersions[0]]",
+        "location": "[variables('location')]",
+        "name": "[parameters('resourceName')]",
+        "properties": {
+          "containers": [
+            {
+              "name": "sftp",
+              "properties": {
+                "image": "atmoz/sftp:latest",
+                "ports": [
+                  {
+                    "port": 22
+                  }
+                ],
+                "environmentVariables": [
+                  {
+                    "name": "SFTP_USERS",
+                    "value": "[concat(parameters('sftpUserName'),':',parameters('sftpPassword'),':1001']"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "memoryInGB": 1,
+                    "cpu": 2
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "[concat('sftpvolume',parameters('sftpUserName')]",
+                    "mountPath": "[concat('/home/',parameters('sftpUserName'),'upload']",
+                    "readOnly": false
+                  }
+                ]
+              }
+            }
+          ],
+          "restartPolicy": "OnFailure",
+          "ipAddress": {
+            "ports": [
+              {
+                "protocol": "TCP",
+                "port": 22
+              }
+            ],
+            "dnsNameLabel": "[parameters('resourceName')]",
+            "type": "Public"
+          },
+          "osType": "Linux",
+          "volumes": [
+            {
+              "name": "[concat('sftpvolume',parameters('sftpUserName')]",
+              "azureFile": {
+                "shareName": "[parameters('sftpUserName')]",
+                "readOnly": false,
+                "storageAccountName": "[parameters('storageAccountName')]",
+                "storageAccountKey": "[listkeys(variables('storageAccountId'), variables('storageApiVersion')).keys[0].value]"
+              }
+            }
+          ]
+        }
+      }        
+    ]
+}
