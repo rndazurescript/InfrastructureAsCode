@@ -120,7 +120,7 @@
               "volumeMounts": [
                 {
                   "name": "[variables('azureFileShareName')]",
-                  "mountPath": "[concat('/home/',parameters('sftpUserName'),'upload')]",
+                  "mountPath": "[concat('/home/',parameters('sftpUserName'),'/upload')]",
                   "readOnly": false
                 }
               ]
