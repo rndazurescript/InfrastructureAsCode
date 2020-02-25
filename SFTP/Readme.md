@@ -4,4 +4,4 @@ Deploy [Atmoz Sftp](https://github.com/atmoz/sftp) in ACI, storing files in a st
 
 ## Try on Azure Portal
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%rndazurescript%2FInfrastructureAsCode%2Fmaster%2FSFTP%2Fatmoz-sftp.json)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frndazurescript%2FInfrastructureAsCode%2Fmaster%2FSFTP%2Fatmoz-sftp.json)
