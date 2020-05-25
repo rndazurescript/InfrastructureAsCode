@@ -14,9 +14,12 @@ Connect-AzAccount -Subscription $subscriptionId  -Tenant $tenantId
 New-AzResourceGroupDeployment -TemplateFile ./template.json -TemplateParameterFile ./dev-env.params.json -ResourceGroupName "sample-arm-template-rg"
 
 # Another example where I pass the variables through arguments
+$ResourceGroupName = "sample-arm-template-rg"
+$StorageName = "mydatastg"
 # Also note the incremental deployment mode
 New-AzResourceGroupDeployment -Mode Incremental `
           -TemplateFile "pipeline_010_Storage.deploy.json" `
           -ResourceGroupName $ResourceGroupName `
           -resourceName $StorageName
 ```
+
