@@ -1,5 +1,7 @@
 # Deploy ARM templates via powershell
 
+The following script requires [Powershell's Az module](https://docs.microsoft.com/en-us/powershell/azure/overview) (already available in [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview))
+
 ```
 # The AAD Tenant ID found at https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview
 $tenantId = 'ab07ab07-ab07-ab07-ab07-ab07ab07ab07'
